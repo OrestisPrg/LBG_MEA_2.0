@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yml-local-pingme-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service_id: local-ping-me-from-yml
+  template:
+    metadata:
+      labels:
+        service_id: local-ping-me-from-yml
+    spec:
+      containers:
+      - name: yml-local-ping-me
+        image: docker.io/stream2stream/pingme
+        env:
+        - name: REMOTE_ECHO_SERVER_ENDPOINT
+          value: :8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yml-remote-pingme-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service_id: remote-ping-me-from-yml
+  template:
+    metadata:
+      labels:
+        service_id: remote-ping-me-from-yml
+    spec:
+      containers:
+      - name: yml-remote-ping-me
+        image: docker.io/stream2stream/pingme

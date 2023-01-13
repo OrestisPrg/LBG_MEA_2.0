@@ -1,0 +1,33 @@
+version: "0.1"
+
+services:
+  mongo_db:
+    image: mongo
+    container_name: mdb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mymongo_vol:/data/db/
+  mongo_api:
+    depends_on:
+      - "mongo_db"
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: mdb_api
+    restart: always
+    ports:
+      - "8091:8091"
+    environment:
+      MONGODB_ENDPOINT: "mdb:27017"
+
+volumes:
+  mymongo_vol:
+    external: true
+
+
+networks:
+  default:
+    name: mongodb-net
+    external: false

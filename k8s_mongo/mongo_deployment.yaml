@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yml-mongodb-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service_id: mongodb-from-yml
+  template:
+    metadata:
+      labels:
+        service_id: mongodb-from-yml
+    spec:
+      containers:
+      - name: yml-mongodb
+        image: mongo
+    volumes:
+    - name: mymongo_vol
+    
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yml-mongodb-api-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service_id: mongodb-api-from-yml
+  template:
+    metadata:
+      labels:
+        service_id: mongodb-api-from-yml
+    spec:
+      containers:
+      - name: yml-mongodb-api
+        image: orestispg/mongodb_api:latest
+        env:
+        - name: MONGODB_ENDPOINT
+          value: yml-mongodb-service:27017
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yml-mongodb-service
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+      service_id: mongodb-from-yml
+  ports:
+  - nodePort: 30060
+    port: 27017
+    targetPort: 27017
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yml-mongodb-api-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+      service_id: mongodb-api-from-yml
+  ports:
+  - port: 30070
+    targetPort: 8091 

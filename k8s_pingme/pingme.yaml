@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yml-local-pingme-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service_id: local-ping-me-from-yml
+  template:
+    metadata:
+      labels:
+        service_id: local-ping-me-from-yml
+    spec:
+      containers:
+      - name: yml-local-ping-me
+        image: docker.io/stream2stream/pingme
+        env:
+        - name: PINGME_ENDPOINT
+          value: yml-remote-pingme-service:8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yml-remote-pingme-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service_id: remote-ping-me-from-yml
+  template:
+    metadata:
+      labels:
+        service_id: remote-ping-me-from-yml
+    spec:
+      containers:
+      - name: yml-remote-ping-me
+        image: docker.io/stream2stream/pingme
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yml-remote-pingme-service
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+      service_id: remote-ping-me-from-yml
+  ports:
+  - nodePort: 30081
+    port: 8080
+    targetPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yml-local-pingme-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+      service_id: local-ping-me-from-yml
+  ports:
+  - port: 30091
+    targetPort: 8080 

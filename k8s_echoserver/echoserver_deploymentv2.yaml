@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yml-echoserver-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service_id: local-echo-server-from-yml
+  template:
+    metadata:
+      labels:
+        service_id: local-echo-server-from-yml
+    spec:
+      containers:
+      - name: yml-local-echo-server
+        image: k8s.gcr.io/echoserver:1.4
+        env:
+        - name: REMOTE_ECHO_SERVER_ENDPOINT
+          value: :30080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yml-echoserver-deployment-v2
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service_id: remote-echo-server-from-yml
+  template:
+    metadata:
+      labels:
+        service_id: remote-echo-server-from-yml
+    spec:
+      containers:
+      - name: yml-remote-echo-server
+        image: k8s.gcr.io/echoserver:1.4
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yml-remote-echoserver-service
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+      service_id: remote-echo-server-from-yml
+  ports:
+  - nodePort: 30080
+    port: 8080
+    targetPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yml-local-echoserver-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+      service_id: local-echo-server-from-yml
+  ports:
+  - port: 30090
+    targetPort: 8080 
